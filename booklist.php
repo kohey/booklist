@@ -1,3 +1,23 @@
+<!-- / < !--mysqlと接続設定始め -->
+<?php
+//     < !--Mysqlサーバとの接続に必要な値を変数に代入する -->
+$username = 'root';
+$password = '';
+
+// PDOのオブジェクトを作成して、SQLサーバと接続する;
+$database = new PDO('mysql:host=localhost,dbname:booklist;charset=UTF-8;', $username, $password);
+// 実行するSQLの作成
+$sql = 'SELECT * FROM books ORDER BY created_at DESC';
+//sqlの実行
+$statement = $database->query($sql);
+//結果のレコードを配列に変換する
+$records = $statement->fetchAll();
+//ステートメントの破棄
+$statement = null;
+// mysqlの処理が終わったら接続をきる
+$database = null;
+?>
+<!-- 接続設定終わり -->
 <!DOCTYPE html>
 <html lang="ja">
     <head>
