@@ -1,23 +1,37 @@
-<!-- / < !--mysqlと接続設定始め -->
 <?php
-//     < !--Mysqlサーバとの接続に必要な値を変数に代入する -->
+    // MySQLサーバ接続に必要な値を変数に代入
 $username = 'root';
 $password = '';
 
-// PDOのオブジェクトを作成して、SQLサーバと接続する;
-$database = new PDO('mysql:host=localhost,dbname:booklist;charset=UTF-8;', $username, $password);
-// 実行するSQLの作成
+    // PDO のインスタンスを生成して、MySQLサーバに接続
+$database = new PDO('mysql:host=localhost;dbname=booklist;charset=UTF8;unix_socket=/tmp/mysql.sock', $username, $password);
+
+    // フォームから書籍タイトルが送信されていればデータベースに保存する
+if ($_POST['book_title']) {
+    // 実行するSQLを作成
+    $sql = 'INSERT INTO books (book_title) VALUES(:book_title)';
+    // ユーザ入力に依存するSQLを実行するので、セキュリティ対策をする
+    $statement = $database->prepare($sql);
+    // ユーザ入力データ($_POST['book_title'])をVALUES(?)の?の部分に代入する
+    $statement->bindParam(':book_title', $_POST['book_title']);
+    // SQL文を実行する
+    $statement->execute();
+    // ステートメントを破棄する
+    $statement = null;
+}
+
+    // 実行するSQLを作成
 $sql = 'SELECT * FROM books ORDER BY created_at DESC';
-//sqlの実行
+    // SQLを実行する
 $statement = $database->query($sql);
-//結果のレコードを配列に変換する
+    // 結果レコード（ステートメントオブジェクト）を配列に変換する
 $records = $statement->fetchAll();
-//ステートメントの破棄
+
+    // ステートメントを破棄する
 $statement = null;
-// mysqlの処理が終わったら接続をきる
+    // MySQLを使った処理が終わると、接続は不要なので切断する
 $database = null;
 ?>
-<!-- 接続設定終わり -->
 <!DOCTYPE html>
 <html lang="ja">
     <head>
@@ -27,16 +41,6 @@ $database = null;
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     </head>
     <body class="mt-4">
-
-    <!-- 動作確認用コード始め -->
-    <?php
-    echo '< div style = "background-color: skyblue;" >';
-    echo '<p>動作確認用</p>';
-    print_r($_POST);
-    echo '</div>';
-
-    ?>
-    <!-- 動作確認用コード終わり -->
         <div class="container">
             <h1><a href="booklist.php">Booklist</a></h1>
 
@@ -52,12 +56,15 @@ $database = null;
 
             <h2>登録された書籍一覧</h2>
             <ul>
-                <li>はじめてのWebアプリケーション</li>
-                <li>かんたん！PHPプログラミング</li>
-                <li>PHP+MySQLで作るWebアプリケーション</li>
-                <?php //登録分ループ開始?>
-                  <li><?php //タイトル?></li>
-                <?php  //ループ終わり?>
+<?php
+if ($records) {
+    foreach ($records as $record) {
+        $book_title = $record['book_title']; ?>
+                    <li><?php echo htmlspecialchars($book_title, ENT_QUOTES, 'UTF-8'); ?></li>
+<?php
+    }
+}
+?>
             </ul>
         </div>
 
@@ -67,4 +74,4 @@ $database = null;
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
         <script defer src="https://use.fontawesome.com/releases/v5.2.0/js/all.js" integrity="sha384-4oV5EgaV02iISL2ban6c/RmotsABqE4yZxZLcYMAdG7FAPsyHYAPpywE9PJo+Khy" crossorigin="anonymous"></script>
     </body>
-</p>
+</html>
